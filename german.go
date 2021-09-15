@@ -14,7 +14,8 @@ import (
 func main() {
 	apiKey := os.Getenv("DEEPL_API_KEY")
 	endpoint := "https://api-free.deepl.com/v2/translate"
-	word := "what time is it?"
+	argsWithoutProg := os.Args[1:]
+	word := strings.Join(argsWithoutProg," ")
 	data := url.Values{}
 	data.Set("auth_key", apiKey)
 	data.Set("target_lang", "DE")
