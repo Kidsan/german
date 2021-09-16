@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +12,14 @@ import (
 	"strings"
 )
 
+type Translation struct {
+	DetectedSourceLanguage string `json:"detected_source_language"`
+	Text string `json:text`
+}
+
+type DeepLResponse struct {
+	Translations[] Translation
+}
 func main() {
 	apiKey := os.Getenv("DEEPL_API_KEY")
 	endpoint := "https://api-free.deepl.com/v2/translate"
@@ -27,7 +36,7 @@ func main() {
 	}
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
-
+	var deepLResponse DeepLResponse
 	res, err := client.Do(r)
 	if err != nil {
 		log.Fatal(err)
@@ -40,5 +49,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%s", body)
+	err = json.Unmarshal(body, &deepLResponse)
+
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%s", "In " + deepLResponse.Translations[0].DetectedSourceLanguage + ": " + word + "\n")
+	fmt.Printf("%s", "In German: " + deepLResponse.Translations[0].Text)
+	fmt.Printf("%s", "\n")
 }
