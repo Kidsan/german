@@ -20,41 +20,55 @@ type Translation struct {
 type DeepLResponse struct {
 	Translations[] Translation
 }
-func main() {
-	apiKey := os.Getenv("DEEPL_API_KEY")
+
+func translate (apiKey string, toTranslate string) (DeepLResponse, error) {
 	endpoint := "https://api-free.deepl.com/v2/translate"
-	argsWithoutProg := os.Args[1:]
-	word := strings.Join(argsWithoutProg," ")
 	data := url.Values{}
+	var deepLResponse DeepLResponse
 	data.Set("auth_key", apiKey)
 	data.Set("target_lang", "DE")
-	data.Set("text", word)
+	data.Set("text", toTranslate)
 	client := &http.Client{}
 	r, err := http.NewRequest("POST", endpoint, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil {
-		log.Fatal(err)
+		return deepLResponse, err
 	}
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
-	var deepLResponse DeepLResponse
+
 	res, err := client.Do(r)
 	if err != nil {
-		log.Fatal(err)
+		return deepLResponse, err
 	}
+
 	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode > 299 {
 		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
 	}
 	if err != nil {
-		log.Fatal(err)
+		return deepLResponse, err
 	}
 	err = json.Unmarshal(body, &deepLResponse)
 
 	if err != nil {
-		panic(err)
+		return deepLResponse, err
 	}
-	fmt.Printf("%s", "In " + deepLResponse.Translations[0].DetectedSourceLanguage + ": " + word + "\n")
-	fmt.Printf("%s", "In German: " + deepLResponse.Translations[0].Text)
+
+	return deepLResponse, nil
+}
+
+func main() {
+	apiKey := os.Getenv("DEEPL_API_KEY")
+	argsWithoutProg := os.Args[1:]
+	word := strings.Join(argsWithoutProg," ")
+
+	response, err := translate(apiKey, word)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%s", "In " + response.Translations[0].DetectedSourceLanguage + ": " + word + "\n")
+	fmt.Printf("%s", "In German: " + response.Translations[0].Text)
 	fmt.Printf("%s", "\n")
 }
