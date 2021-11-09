@@ -24,3 +24,4 @@ the way the deepl api can automatically detect source languages. However, this t
 be able to very quickly translate words from English to German without navigating around a browser. Although other 
 such tools exist and are very capable, I took the opportunity to practice making API calls in golang and attempt to write
 somewhat idiomatic golang.
+
